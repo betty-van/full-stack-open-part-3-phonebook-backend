@@ -25,7 +25,7 @@ let persons = [
 
 const app = http.createServer((request, response) => {
   response.writeHead(200, { 'Content-Type': 'application/json' })
-  response.end(JSON.stringify(person))
+  response.end(JSON.stringify(persons))
 })
 
 const port = 3001

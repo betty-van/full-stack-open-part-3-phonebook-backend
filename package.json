@@ -16,5 +16,8 @@
   "bugs": {
     "url": "https://github.com/betty-van/full-stack-open-part-3-phonebook-backend/issues"
   },
-  "homepage": "https://github.com/betty-van/full-stack-open-part-3-phonebook-backend#readme"
+  "homepage": "https://github.com/betty-van/full-stack-open-part-3-phonebook-backend#readme",
+  "dependencies": {
+    "express": "^4.17.1"
+  }
 }
