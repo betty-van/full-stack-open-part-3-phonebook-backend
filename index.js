@@ -1,5 +1,8 @@
 const express = require('express')
 const app = express()
+const bodyParser = require('body-parser')
+
+app.use(bodyParser.json())
 
 let persons = [
     {
@@ -57,6 +60,49 @@ app.delete('/persons/:id', (request, response) => {
 
     response.status(204).end()
 })
+
+app.post('/api/persons', (request, response) => {
+    const body = request.body
+
+    if (!body.name || !body.number) {
+        return response.status(400).json({
+            error: 'content missing'
+        })
+    }
+    else if (nameAlreadyExists(body.name)) {
+        return response.status(400).json({
+            error: 'name must be unique'
+        })
+    }
+
+    const person = {
+        name: body.name,
+        number: body.number,
+        id: generateId()
+    }
+
+    persons = persons.concat(person)
+
+    response.json(person)
+})
+
+const generateId = () => {
+    const randomId = persons.length > 0
+        ? Math.floor(Math.random() * 100)
+        : 0
+    return randomId
+}
+
+const nameAlreadyExists = (name) => {
+    const personList = persons.map(p => p.name)
+    
+    if (personList.indexOf(name) !== -1) {
+        return true
+    }
+    else {
+        return false
+    }
+}
 
 const PORT = 3001
 app.listen(PORT, () => {
