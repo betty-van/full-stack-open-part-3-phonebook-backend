@@ -5,12 +5,13 @@ const morgan = require('morgan')
 
 app.use(bodyParser.json())
 
+// Used to log HTTP requests to the console
 app.use(morgan((tokens, req, res) => {
     const method = tokens.method(req, res)
     
     if (method === 'POST') {
         const body = JSON.stringify(req.body)
-        
+
         return [
             tokens.method(req, res),
             tokens.url(req, res),
@@ -52,20 +53,24 @@ let persons = [
     }
 ]
 
+// Home page
 app.get('/', (request, response) => {
     response.send('<h1>Hello World!</h1>')
 })
 
+// Get persons API 
 app.get('/api/persons', (request, response) => {
     response.json(persons)
 })
 
+// Get information on the phonebook length
 app.get('/info', (request, response) => {
     const phonebookLength = persons.length
     const date = new Date()
     response.send(`<p>Phonebook has info for ${phonebookLength} people.</p> <p> ${date} </p>`)
 })
 
+// Get API for each person
 app.get('/persons/:id', (request, response) => {
     const id = Number(request.params.id)
     const person = persons.find(person => person.id === id)
@@ -79,6 +84,7 @@ app.get('/persons/:id', (request, response) => {
     
 })
 
+// Delete a person
 app.delete('/persons/:id', (request, response) => {
     const id = Number(request.params.id)
     persons = persons.filter(person => person.id !== id)
@@ -86,6 +92,7 @@ app.delete('/persons/:id', (request, response) => {
     response.status(204).end()
 })
 
+// Add new person
 app.post('/api/persons', (request, response) => {
     const body = request.body
 
@@ -111,6 +118,7 @@ app.post('/api/persons', (request, response) => {
     response.json(person)
 })
 
+// Random id from 0 - 100
 const generateId = () => {
     const randomId = persons.length > 0
         ? Math.floor(Math.random() * 100)
@@ -118,6 +126,7 @@ const generateId = () => {
     return randomId
 }
 
+// If name is alreadyin phonebook
 const nameAlreadyExists = (name) => {
     const personList = persons.map(p => p.name)
     
