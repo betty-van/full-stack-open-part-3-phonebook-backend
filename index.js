@@ -6,6 +6,7 @@ const cors = require('cors')
 
 app.use(bodyParser.json())
 app.use(cors())
+app.use(express.static('build'))
 
 // Used to log HTTP requests to the console
 app.use(morgan((tokens, req, res) => {
