@@ -69,7 +69,7 @@ app.get('/api/persons', (request, response) => {
 })
 
 // Get API for each person
-app.get('/persons/:id', (request, response) => {
+app.get('/api/persons/:id', (request, response) => {
     Person.findById(request.params.id)
         .then(person => {
             if(person) {
@@ -99,11 +99,6 @@ app.post('/api/persons', (request, response) => {
             error: 'content missing'
         })
     }
-    else if (nameAlreadyExists(body.name)) {
-        return response.status(400).json({
-            error: 'name must be unique'
-        })
-    }
 
     const person = new Person({
         name: body.name,
@@ -115,17 +110,24 @@ app.post('/api/persons', (request, response) => {
     })
 })
 
-// If name is alreadyin phonebook
-const nameAlreadyExists = (name) => {
-    const personList = persons.map(p => p.name)
-    
-    if (personList.indexOf(name) !== -1) {
-        return true
+// If name exists already, then update the phone number
+app.put('/api/persons/:id', (request, response, next) => {
+    const body = request.body
+
+    if (Person.findOne(body.name)) {
+       const person = {
+           name: body.name,
+           number: body.number
+       }
+
+       Person.findByIdAndUpdate(request.params.id, person, { new: true })
+        .then(updatedPerson => {
+            response.json(updatedPerson.toJSON())
+        })
+        .catch(error => next(error))
     }
-    else {
-        return false
-    }
-}
+})
+
 
 const unknownEndpoint = (request, response) => {
     response.status(404).send({ error: 'unknown endpoint' })

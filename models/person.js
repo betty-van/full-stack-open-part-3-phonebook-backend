@@ -1,4 +1,5 @@
 const mongoose = require('mongoose')
+mongoose.set('useFindAndModify', false)
 
 // Connect to MongoDB
 const url = process.env.MONGODB_URI
