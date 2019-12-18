@@ -1,8 +1,10 @@
+require('dotenv').config()
 const express = require('express')
 const app = express()
 const bodyParser = require('body-parser')
 const morgan = require('morgan')
 const cors = require('cors')
+const Person = require('./models/person')
 
 app.use(bodyParser.json())
 app.use(cors())
@@ -63,7 +65,7 @@ app.get('/', (request, response) => {
 
 // Get persons API 
 app.get('/api/persons', (request, response) => {
-    response.json(persons)
+    Person.find({}).then(persons => response.json(persons.map(person => person.toJSON())))
 })
 
 // Get information on the phonebook length
@@ -75,16 +77,18 @@ app.get('/info', (request, response) => {
 
 // Get API for each person
 app.get('/persons/:id', (request, response) => {
-    const id = Number(request.params.id)
-    const person = persons.find(person => person.id === id)
-
-    if (person) {
-        response.json(person)
-    }
-    else {
-        response.status(404).end()
-    }
-    
+    Person.findById(request.params.id)
+        .then(person => {
+            if(person) {
+                response.json(person.toJSON())
+            } else {
+                response.status(404).end()
+            }
+    })
+    .catch((error) => {
+        console.log(error)
+        response.status(404).send({ error: 'malformmated id '})
+    })
 })
 
 // Delete a person
@@ -99,7 +103,7 @@ app.delete('/persons/:id', (request, response) => {
 app.post('/api/persons', (request, response) => {
     const body = request.body
 
-    if (!body.name || !body.number) {
+    if (body.name === undefined || body.number === undefined) {
         return response.status(400).json({
             error: 'content missing'
         })
@@ -110,24 +114,15 @@ app.post('/api/persons', (request, response) => {
         })
     }
 
-    const person = {
+    const person = new Person({
         name: body.name,
         number: body.number,
-        id: generateId()
-    }
+    })
 
-    persons = persons.concat(person)
-
-    response.json(person)
+    person.save().then(savedPerson => {
+        response.json(savedPerson.toJSON())
+    })
 })
-
-// Random id from 0 - 100
-const generateId = () => {
-    const randomId = persons.length > 0
-        ? Math.floor(Math.random() * 100)
-        : 0
-    return randomId
-}
 
 // If name is alreadyin phonebook
 const nameAlreadyExists = (name) => {
@@ -141,7 +136,7 @@ const nameAlreadyExists = (name) => {
     }
 }
 
-const PORT = process.env.PORT || 3001
+const PORT = process.env.PORT
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`)
 })
