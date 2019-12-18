@@ -68,6 +68,17 @@ app.get('/api/persons', (request, response) => {
     Person.find({}).then(persons => response.json(persons.map(person => person.toJSON())))
 })
 
+app.get('/info', (request, response) => {
+    const date = new Date()
+
+    Person.collection.countDocuments()
+    .then(result => {
+        response.send(`<p>Phonebook has info on ${ result } people.</p> 
+            <p>${ date }</p>`)
+    })
+    .catch(error => next(error))
+})
+
 // Get API for each person
 app.get('/api/persons/:id', (request, response) => {
     Person.findById(request.params.id)
