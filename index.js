@@ -64,8 +64,10 @@ app.get('/', (request, response) => {
 })
 
 // Get persons API 
-app.get('/api/persons', (request, response) => {
-    Person.find({}).then(persons => response.json(persons.map(person => person.toJSON())))
+app.get('/api/persons', (request, response, next) => {
+    Person.find({})
+        .then(persons => response.json(persons.map(person => person.toJSON())))
+        .catch(error => next(error))
 })
 
 app.get('/info', (request, response, next) => {
@@ -152,7 +154,6 @@ const unknownEndpoint = (request, response) => {
 app.use(unknownEndpoint)
 
 const errorHandler = (error, request, response, next) => {
-    console.log(error.message)
 
     if (error.name === 'CastError' && error.kind === 'ObjectId') {
         return response.status(400).send({ error: 'malformatted id '})
@@ -165,7 +166,7 @@ const errorHandler = (error, request, response, next) => {
 
 app.use(errorHandler)
 
-const PORT = process.env.PORT
+const PORT = process.env.PORT || 3001
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`)
 })
