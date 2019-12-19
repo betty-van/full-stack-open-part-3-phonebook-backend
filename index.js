@@ -35,28 +35,28 @@ app.use(morgan((tokens, req, res) => {
     ].join(' ')
 }))
 
-let persons = [
-    {
-        name: "Arto Hellas",
-        number: "040-123456",
-        id: 1
-    },
-    {
-        name: "Ada Lovelace",
-        number: "39-33-532532",
-        id: 2
-    },
-    {
-        name: "Dan Abramov",
-        number: "12-43-234345",
-        id: 3
-    },
-    {
-        name: "Mary Poppendieck",
-        number: "39-23-642122",
-        id: 4
-    }
-]
+// let persons = [
+//     {
+//         name: "Arto Hellas",
+//         number: "040-123456",
+//         id: 1
+//     },
+//     {
+//         name: "Ada Lovelace",
+//         number: "39-33-532532",
+//         id: 2
+//     },
+//     {
+//         name: "Dan Abramov",
+//         number: "12-43-234345",
+//         id: 3
+//     },
+//     {
+//         name: "Mary Poppendieck",
+//         number: "39-23-642122",
+//         id: 4
+//     }
+// ]
 
 // Home page
 app.get('/', (request, response) => {
@@ -68,7 +68,7 @@ app.get('/api/persons', (request, response) => {
     Person.find({}).then(persons => response.json(persons.map(person => person.toJSON())))
 })
 
-app.get('/info', (request, response) => {
+app.get('/info', (request, response, next) => {
     const date = new Date()
 
     Person.collection.countDocuments()
@@ -80,7 +80,7 @@ app.get('/info', (request, response) => {
 })
 
 // Get API for each person
-app.get('/api/persons/:id', (request, response) => {
+app.get('/api/persons/:id', (request, response, next) => {
     Person.findById(request.params.id)
         .then(person => {
             if(person) {
@@ -93,7 +93,7 @@ app.get('/api/persons/:id', (request, response) => {
 })
 
 // Delete a person
-app.delete('/api/persons/:id', (request, response) => {
+app.delete('/api/persons/:id', (request, response, next) => {
     Person.findByIdAndRemove(request.params.id)
         .then(result => {
             response.status(204).end()
@@ -102,7 +102,7 @@ app.delete('/api/persons/:id', (request, response) => {
 })
 
 // Add new person
-app.post('/api/persons', (request, response) => {
+app.post('/api/persons', (request, response, next) => {
     const body = request.body
 
     if (body.name === undefined || body.number === undefined) {
@@ -116,9 +116,14 @@ app.post('/api/persons', (request, response) => {
         number: body.number,
     })
 
-    person.save().then(savedPerson => {
-        response.json(savedPerson.toJSON())
-    })
+    person.save()
+        .then(savedPerson => {
+            return savedPerson.toJSON()
+        })
+        .then(savedAndFormattedPerson => {
+            response.json(savedAndFormattedPerson)
+        })
+        .catch(error => next(error))
 })
 
 // If name exists already, then update the phone number
@@ -151,6 +156,8 @@ const errorHandler = (error, request, response, next) => {
 
     if (error.name === 'CastError' && error.kind === 'ObjectId') {
         return response.status(400).send({ error: 'malformatted id '})
+    } else if (error.name === 'ValidationError') {
+        return response.status(400).send({ error: error.message })
     }
 
     next(error)

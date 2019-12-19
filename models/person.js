@@ -1,4 +1,6 @@
 const mongoose = require('mongoose')
+const uniqueValidator = require('mongoose-unique-validator')
+
 mongoose.set('useFindAndModify', false)
 
 // Connect to MongoDB
@@ -16,10 +18,21 @@ mongoose.connect(url, { useNewUrlParser: true })
 
 // Declaring Schema for a person
 const personSchema = new mongoose.Schema({
-    name: String,
-    number: String,
+    name: {
+        type: String,
+        required: true,
+        unique: true,
+    },
+    number: {
+        type: String,
+        required: true,
+    },
 })
 
+// Apply uniqueValidator to personSchema
+personSchema.plugin(uniqueValidator)
+
+// Delete the object ID but make and keep the string version of ID
 personSchema.set('toJSON', {
     transform: (document, returnedObject) => {
         returnedObject.id=returnedObject._id.toString()
