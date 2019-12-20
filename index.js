@@ -13,7 +13,7 @@ app.use(express.static('build'))
 // Used to log HTTP requests to the console
 app.use(morgan((tokens, req, res) => {
     const method = tokens.method(req, res)
-    
+
     if (method === 'POST') {
         const body = JSON.stringify(req.body)
 
@@ -63,7 +63,7 @@ app.get('/', (request, response) => {
     response.send('<h1>Hello World!</h1>')
 })
 
-// Get persons API 
+// Get persons API
 app.get('/api/persons', (request, response, next) => {
     Person.find({})
         .then(persons => response.json(persons.map(person => person.toJSON())))
@@ -74,11 +74,11 @@ app.get('/info', (request, response, next) => {
     const date = new Date()
 
     Person.collection.countDocuments()
-    .then(result => {
-        response.send(`<p>Phonebook has info on ${ result } people.</p> 
+        .then(result => {
+            response.send(`<p>Phonebook has info on ${ result } people.</p> 
             <p>${ date }</p>`)
-    })
-    .catch(error => next(error))
+        })
+        .catch(error => next(error))
 })
 
 // Get API for each person
@@ -90,8 +90,8 @@ app.get('/api/persons/:id', (request, response, next) => {
             } else {
                 response.status(404).end()
             }
-    })
-    .catch(error => next(error))
+        })
+        .catch(error => next(error))
 })
 
 // Delete a person
@@ -133,16 +133,16 @@ app.put('/api/persons/:id', (request, response, next) => {
     const body = request.body
 
     if (Person.findOne(body.name)) {
-       const person = {
-           name: body.name,
-           number: body.number
-       }
+        const person = {
+            name: body.name,
+            number: body.number
+        }
 
-       Person.findByIdAndUpdate(request.params.id, person, { new: true })
-        .then(updatedPerson => {
-            response.json(updatedPerson.toJSON())
-        })
-        .catch(error => next(error))
+        Person.findByIdAndUpdate(request.params.id, person, { new: true })
+            .then(updatedPerson => {
+                response.json(updatedPerson.toJSON())
+            })
+            .catch(error => next(error))
     }
 })
 
